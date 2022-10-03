@@ -12,53 +12,59 @@ void  ParentProcess(void);                /* parent process prototype - initial 
 
 void  main(void)
 {
-     pid_t  pid;  //pid1 - child of parent 
-     int status;
+  pid_t  pid;
+  int status;
 
-     int i;
-     for (i = 0; i< 2; i++){
-          pid = fork(); //parent process creates child1 : 2 processes running
-
-          if (pid < 0){
-               printf("Error: Fork Op\n");
-               exit(-1);
-          }
-          else if (pid == 0) { //child enters 
-          
-               ChildProcess();
-          }
-     }                //blocking call returns an address from child  - puts parent in waitng state and waits for a signal from child
-     ParentProcess();     //parent takes in reference address to use
+  int i;
+  for (i = 0; i< 2; i++){
+    /**parent process creates child1 : 2 processes running**/
+    pid = fork(); 
+    if (pid < 0){
+      printf("Error: Fork Op\n");
+      exit(-1);
+    }
+    else if (pid == 0) { /**child enters**/ 
+      ChildProcess();
+    }
+  } 
+  /**blocking call returns an address from child  - puts parent in waitng state and waits for a signal from child**/
+    
+  
+  ParentProcess();
           
      
 }
 
 void  ChildProcess(void)
 {
-     pid_t  pid2, ppid, cpid;  //pid2 - child of child
+  /** ppid - PARENT PID, cpid - CHILD PID **/
+  pid_t  ppid, cpid;  
+  int i;
+  cpid = getpid(); 
+  ppid = getppid();
 
-     cpid = getpid(); 
-     ppid = getppid();
+  /** INITIALIZE RANDOM GENERATOR WITH SEED = TIME(NULL)**/
+  srand(time(NULL));
+  int loop_count = rand()%MAX_COUNT;
 
-     int i;
-     srand(time(NULL));
-     int loop_count = rand()%MAX_COUNT;
-     for (i = 1; i <= loop_count; i++){
-          printf("Child Pid: %d is going to sleep!\n", cpid);
-          sleep(rand()%TIME_MAX_COUNT);
-          printf("Child Pid: %d is awake! Where is my Parent: %d\n", cpid, ppid);
-     }
-     exit(0);
+  for (i = 1; i <= loop_count; i++){
+    printf("Child Pid: %d is going to sleep!\n", cpid);
+    sleep(rand()%TIME_MAX_COUNT);
+    printf("Child Pid: %d is awake! Where is my Parent: %d\n", cpid, ppid);
+  }
+  
+  exit(0);
 }
 
 void  ParentProcess()
 {
-     int status, child_pid;
-     int i;
-     for (i = 0; i< 2; i++){
-          child_pid = wait(status);
-          printf("Child Pid: %d has completed !\n", child_pid);
-     }
+  int i, status, child_pid;
      
-     printf("*** Parent is done, Child exited with exit status | %d | ***\n", status);
+  for (i = 0; i< 2; i++){
+    child_pid = wait(&status);
+    printf("Child Pid: %d has completed !\n", child_pid);
+  }
+     
+  printf("*** Parent is done, Child exited with exit status | %d | ***\n", status);
+
 }
